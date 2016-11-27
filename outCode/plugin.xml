@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="outcodeBuilder"
+         name="ModelExtractor Project Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true"
+            isConfigurable="true">
+         <run
+               class="org.lrg.outcode.builder.ModelExtractorBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="outcodeNature"
+         name="OutCode Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.lrg.outcode.builder.OutcodeNature">
+         </run>
+      </runtime>
+      <builder
+            id="OutCode.outcodeBuilder">
+      </builder>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="OutCode Project Nature commands"
+            id="OutCode.outcodeNature.category">
+      </category>
+      <command
+            name="Add/RemoveOutCode Project Nature"
+            defaultHandler="org.lrg.outcode.builder.AddRemoveOutcodeNatureHandler"
+            categoryId="OutCode.outcodeNature.category"
+            id="OutCode.addRemoveOutcodeNature">
+      </command>
+      <command
+            categoryId="OutCode.outcodeNature.category"
+            defaultHandler="org.outcode.git.Giterator"
+            id="outCode.git.run"
+            name="GitRun">
+      </command>
+      <command
+            defaultHandler="org.lrg.outcode.eclipse.handlers.EntityAccessesEvolution"
+            id="outCode.hind.accesses"
+            name="Show Accesses Evolution">
+      </command>
+      <command
+            defaultHandler="org.lrg.outcode.eclipse.handlers.CleanDB"
+            id="outCode.db.clean"
+            name="Clean DB">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="OutCode.addRemoveOutcodeNature"
+               label="Disable Sample builder"
+               style="push">
+         </command>
+         <command
+               commandId="OutCode.addRemoveOutcodeNature"
+               label="Enable Sample builder"
+               style="push">
+         </command>
+         <command
+               commandId="outCode.db.clean"
+               label="Clean DB"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         id="xmlProblem"
+         name="XML Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="outCode.git.run"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+SHIFT+M">
+      </key>
+      <key
+            commandId="outCode.hind.accesses"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+SHIFT+A">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.lrg.outcode.views.Hindsight"
+            id="outCode.browser"
+            name="Hindsight"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>

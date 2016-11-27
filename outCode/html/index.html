@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Hindsight</title>
+
+
+</head>
+<body>
+  <div id="app"> </div>
+ 	<div id="log" style="width:300; height:200; outline:1px solid powderblue"></div>
+ 	<script>
+	  (function () {
+	      if (!console) {
+	          console = {};
+	      }
+	      var old = console.log;
+	      var logger = document.getElementById('log');
+	      /*console.log = function (message) {
+	          if (typeof message == 'object') {
+	              logger.innerHTML = (JSON && JSON.stringify ? JSON.stringify(message) : String(message)) + '<br />';
+	          } else {
+	              logger.innerHTML = message + '<br />';
+	          }
+	      }*/
+	  })();
+  </script>
+  <script src="dist/bundle.js"></script>
+    <script>
+  </script>
+</body>
+</html>

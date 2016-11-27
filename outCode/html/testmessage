@@ -1,0 +1,38 @@
+document.dispatchEvent(new CustomEvent('build', { 'detail': {
+    'msg': 'showAccessesHistoryForClass',
+    'history': [
+        {
+            'filePath': 'src/histo/FeatureEnvy.java',
+            'entityId': '=histo/src<histo{DataClass.java[DataClass^i',
+            'rels': [
+                'null-6b292813e16488ac3a1cfea61b4560a8afa9e3bf',
+                '6b292813e16488ac3a1cfea61b4560a8afa9e3bf-d4b018f4e03acf8d50c37ad8503783b145561cc6'
+            ]
+        },
+        {
+            'filePath': 'src/histo/FeatureEnvy.java',
+            'entityId': '=histo/src<histo{DataClass.java[DataClass^k',
+            'rels': [
+                'null-6b292813e16488ac3a1cfea61b4560a8afa9e3bf',
+                '6b292813e16488ac3a1cfea61b4560a8afa9e3bf-d4b018f4e03acf8d50c37ad8503783b145561cc6'
+            ]
+        },
+        {
+            'filePath': 'src/histo/FeatureEnvy.java',
+            'entityId': '=histo/src<histo{DataClass.java[DataClass^j',
+            'rels': [
+                null,
+                '6b292813e16488ac3a1cfea61b4560a8afa9e3bf-d4b018f4e03acf8d50c37ad8503783b145561cc6'
+            ]
+        },
+        {
+            'filePath': 'src/histo/FeatureEnvy.java',
+            'entityId': '=histo/src<histo{DataClass.java[DataClass^x',
+            'rels': [
+                null,
+                '6b292813e16488ac3a1cfea61b4560a8afa9e3bf-d4b018f4e03acf8d50c37ad8503783b145561cc6'
+            ]
+        }
+    ]
+}
+}));
