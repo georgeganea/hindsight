@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.lrg.feature.hindsight_1.0.0.201611282024.jar" id="org.lrg.feature.hindsight" version="1.0.0.201611282024">
-      <category name="org.lrg.category"/>
+   <feature url="features/org.lrg.feature.hindsight_1.0.0.201612042036.jar" id="org.lrg.feature.hindsight" version="1.0.0.201612042036">
+      <category name="org.lrg.hindsight"/>
    </feature>
-   <category-def name="org.lrg.category" label="Hindsight"/>
+   <category-def name="org.lrg.hindsight" label="Hindsight"/>
 </site>
