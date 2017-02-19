@@ -46,9 +46,9 @@
             name="GitRun">
       </command>
       <command
-            defaultHandler="org.lrg.outcode.eclipse.handlers.EntityAccessesEvolution"
-            id="outCode.hind.accesses"
-            name="Show Accesses Evolution">
+            defaultHandler="org.lrg.outcode.eclipse.handlers.CurrentFileEvolution"
+            id="outCode.hind.evolution"
+            name="Show Entity Evolution">
       </command>
       <command
             defaultHandler="org.lrg.outcode.eclipse.handlers.CleanDB"
@@ -97,10 +97,10 @@
             sequence="M1+SHIFT+M">
       </key>
       <key
-            commandId="outCode.hind.accesses"
+            commandId="outCode.hind.evolution"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+SHIFT+A">
+            sequence="M1+SHIFT+E">
       </key>
    </extension>
    <extension

@@ -56,7 +56,7 @@ public class Giterator extends AbstractHandler {
 
 	private DiffFormatter df = new DiffFormatter(NullOutputStream.INSTANCE);;
 
-	private final class NullProgressMonitorExtension extends NullProgressMonitor {
+	public static final class NullProgressMonitorExtension extends NullProgressMonitor {
 		private boolean isDone = false;
 
 		@Override
@@ -253,7 +253,7 @@ public class Giterator extends AbstractHandler {
 		// System.out.println("refresh done");
 	}
 
-	private void runMethodDetectionStrategies(String commit, boolean b) {
+	public static void runMethodDetectionStrategies(String commit, boolean b) {
 		GraphDatabaseService dbService = GraphDB.instance.getDB();
 		Transaction tx = dbService.beginTx();
 		try {
@@ -274,7 +274,7 @@ public class Giterator extends AbstractHandler {
 		}
 	}
 
-	private void runClassDetectionStrategies(String commit) {
+	public static void runClassDetectionStrategies(String commit) {
 		GraphDatabaseService dbService = GraphDB.instance.getDB();
 		Transaction tx = dbService.beginTx();
 		try {

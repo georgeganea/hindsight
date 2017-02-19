@@ -101,6 +101,7 @@ public class OutCodeVisitor extends ASTVisitor {
 
 		if (methodDeclaration.isConstructor())
 			return true;
+		System.out.println("method body -- " + methodDeclaration.getBody().toString());
 		if (methodDeclaration.getBody() == null || methodDeclaration.getBody().statements().size() != 1)
 			return true;
 		if (methodDeclaration.getName().getIdentifier().startsWith("get")) {
@@ -136,10 +137,12 @@ public class OutCodeVisitor extends ASTVisitor {
 			Expression leftExpression = assignment.getLeftHandSide();
 			if (isObjectFieldAccess(leftExpression) && isParameterAccess(assignment.getRightHandSide())) {
 				IMethodBinding methodBinding = methodDeclaration.resolveBinding();
-				IJavaElement methodJavaElement = methodBinding.getJavaElement();
-				if (methodJavaElement != null) {
-					Node method = db.createIJavaElementNode(methodJavaElement, commit, commitID, added, removed);
-					method.setProperty("get", true);
+				if (methodBinding != null) {
+					IJavaElement methodJavaElement = methodBinding.getJavaElement();
+					if (methodJavaElement != null) {
+						Node method = db.createIJavaElementNode(methodJavaElement, commit, commitID, added, removed);
+						method.setProperty("get", true);
+					}
 				}
 			}
 		}
@@ -231,6 +234,7 @@ public class OutCodeVisitor extends ASTVisitor {
 					if (accessedIField != null) {
 						Node methodIJavaElementNode = db.createIJavaElementNode(containingIMethod, commit, commitID, added, removed);
 						Node accessedIFieldElementNode = db.createIJavaElementNode(accessedIField, commit, commitID, added, removed);
+						System.out.println(containingIMethod.getElementName() + " -> " + accessedIField.getElementName());
 						methodIJavaElementNode.createRelationshipTo(accessedIFieldElementNode, RelTypes.ACCESSES);
 					}
 				}
@@ -264,7 +268,7 @@ public class OutCodeVisitor extends ASTVisitor {
 	}
 
 	private void addMethodCall(Expression simpleName, IMethodBinding resolveBinding) {
-		if (resolveBinding.getDeclaringClass().isFromSource()) {
+		if (resolveBinding.getDeclaringClass() != null && resolveBinding.getDeclaringClass().isFromSource()) {
 			MethodDeclaration containingMethodDeclaration = findContaingMethod(simpleName);
 			if (containingMethodDeclaration != null) {
 				IJavaElement containingIMethod = getIJavaElement(containingMethodDeclaration);

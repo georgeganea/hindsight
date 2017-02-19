@@ -219,7 +219,7 @@ public class ModelVistor {
 				String absolutePath = repoPath + diffEntry.getNewPath();
 				String pathFromProject = absolutePath.replaceAll("\\\\", "/").replaceFirst(iProject.getLocation().toPortableString(), "");
 				IFile file = iProject.getFile(new Path(pathFromProject));
-				file.refreshLocal(IResource.DEPTH_ONE, null);
+				file.refreshLocal(IResource.DEPTH_INFINITE, null);
 				if (file.exists()) {
 					IJavaProject javaProject = JavaCore.create(iProject);
 					try {
