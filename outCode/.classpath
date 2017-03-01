@@ -36,5 +36,11 @@
 	<classpathentry kind="lib" path="lib/neo4j-unsafe-3.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/server-api-3.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/json-20160810.jar"/>
+	<classpathentry kind="src" path="apt_generated">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/XCoreInterfaces_1.1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

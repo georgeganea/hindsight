@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -20,6 +21,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lrg.outcode.activator.GraphDB;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+
+import com.salexandru.xcore.utils.interfaces.XEntity;
+
+import ro.lrg.insider.view.ToolRegistration;
+import ro.lrg.insider.view.ToolRegistration.XEntityConverter;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -50,6 +56,21 @@ public class Activator extends AbstractUIPlugin {
 
 		startHTMLServer();
 		plugin = this;
+		
+		ToolRegistration.getInstance().registerXEntityConverter(new XEntityConverter() {
+			
+			@Override
+			public XEntity convert(Object element) {
+				if (element instanceof IType) {
+					return outcode.metamodel.factory.Factory.getInstance().createXClass((IType)element);
+				}
+				if (element instanceof org.neo4j.graphdb.Node) {
+					return outcode.metamodel.factory.Factory.getInstance().createXClassVersion((org.neo4j.graphdb.Node)element);					
+				}
+				return null;
+			}
+			
+		});
 	}
 
 	private void startHTMLServer() {
