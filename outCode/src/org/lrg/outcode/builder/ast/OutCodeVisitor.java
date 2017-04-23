@@ -101,7 +101,6 @@ public class OutCodeVisitor extends ASTVisitor {
 
 		if (methodDeclaration.isConstructor())
 			return true;
-		System.out.println("method body -- " + methodDeclaration.getBody().toString());
 		if (methodDeclaration.getBody() == null || methodDeclaration.getBody().statements().size() != 1)
 			return true;
 		if (methodDeclaration.getName().getIdentifier().startsWith("get")) {
@@ -234,7 +233,6 @@ public class OutCodeVisitor extends ASTVisitor {
 					if (accessedIField != null) {
 						Node methodIJavaElementNode = db.createIJavaElementNode(containingIMethod, commit, commitID, added, removed);
 						Node accessedIFieldElementNode = db.createIJavaElementNode(accessedIField, commit, commitID, added, removed);
-						System.out.println(containingIMethod.getElementName() + " -> " + accessedIField.getElementName());
 						methodIJavaElementNode.createRelationshipTo(accessedIFieldElementNode, RelTypes.ACCESSES);
 					}
 				}

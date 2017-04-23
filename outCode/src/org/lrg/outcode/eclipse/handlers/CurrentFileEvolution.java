@@ -49,7 +49,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.lrg.outcode.CountdownTimer;
 import org.lrg.outcode.builder.ModelVistor;
-import org.lrg.outcode.builder.ModelVistor.OPERATIONS;
 import org.outcode.git.Giterator.NullProgressMonitorExtension;
 
 public class CurrentFileEvolution extends AbstractHandler {
@@ -90,6 +89,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 					}
 					FilterPath path = buildFilterPaths(unit.getResource(), repository);
 					walk.markStart(walk.parseCommit(headId));
+
 					final RevWalk fileWalker = createFileWalker(walk, repository, path);
 
 					RevCommit next2 = fileWalker.next();
@@ -104,7 +104,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-							extractModelToDb(monitor, revCommits, map.getRepository());
+							extractModelToDb(monitor, revCommits, map.getRepository(), unit);
 							try {
 								new EntityAccessesEvolution().execute(unit);
 							} catch (ExecutionException e) {
@@ -144,7 +144,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 
 	}
 
-	private void extractModelToDb(IProgressMonitor moni, ArrayList<RevCommit> revCommits, Repository repository) {
+	private void extractModelToDb(IProgressMonitor moni, ArrayList<RevCommit> revCommits, Repository repository, ICompilationUnit unit) {
 		File gitDir = repository.getDirectory();
 		SubMonitor monitor = SubMonitor.convert(moni, revCommits.size());
 		RevCommit commit = null;
@@ -167,6 +167,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 						checkout.setName(commit.getName()).call();
 						CountdownTimer.stop("call");
 						CheckoutResult result = checkout.getResult();
+						IProject javaProject = unit.getResource().getProject();
 
 						if (result.getStatus() == CheckoutResult.Status.OK) {
 							refreshWs();
@@ -175,7 +176,8 @@ public class CurrentFileEvolution extends AbstractHandler {
 
 								System.out.println("modified " + tree);
 								System.out.println("commit name " + commit.getName() + " " + commit.getId().name());
-								new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], OPERATIONS.INITIAL);
+								String path = renameTracker.getPath(commit, unit.getResource().getFullPath().toPortableString());
+								new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(javaProject, path);
 							} else {
 								if (commit.getParentCount() > 0) {
 									RevCommit parent = walk.parseCommit(commit.getParent(0).getId());
@@ -188,8 +190,9 @@ public class CurrentFileEvolution extends AbstractHandler {
 									df.close();
 									String version = commit.getCommitTime() + "000";
 									System.out.println("------- version " + new Date(Long.parseLong(version)).toString() + " -------");
-									new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], gitDir.getAbsolutePath().replace("/.git", "/"), diffs, version,
-											commit.getName());
+									String absolutepath = gitDir.getAbsolutePath().replace("/.git", "/");
+									String path = renameTracker.getPath(commit, unit.getResource().getFullPath().toPortableString());
+									new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(javaProject, absolutepath, diffs, version, commit.getName(), path);
 								}
 							}
 							k++;

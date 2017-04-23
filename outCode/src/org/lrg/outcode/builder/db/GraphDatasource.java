@@ -10,7 +10,6 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.lrg.outcode.IHindsight;
 import org.lrg.outcode.activator.GraphDB;
-import org.lrg.outcode.builder.ModelVistor.OPERATIONS;
 import org.lrg.outcode.builder.RelTypes;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -175,7 +174,7 @@ public class GraphDatasource {
 		return n;
 	}
 
-	public Node addModifiedVersion(ICompilationUnit iCompilationUnit, OPERATIONS modify, String version) {
+	public Node addModifiedVersion(ICompilationUnit iCompilationUnit, String version) {
 		String handleIdentifier = iCompilationUnit.getHandleIdentifier();
 		GraphDatabaseService db = GraphDB.instance.getDB();
 		Node n = null;

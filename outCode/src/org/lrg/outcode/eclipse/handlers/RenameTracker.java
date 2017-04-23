@@ -19,7 +19,7 @@ import org.eclipse.jgit.revwalk.filter.RevFilter;
  *
  * @see FollowFilter
  */
-class RenameTracker {
+public class RenameTracker {
 
 	private final RevFilter filter = new RevFilter() {
 

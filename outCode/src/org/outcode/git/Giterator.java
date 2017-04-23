@@ -41,7 +41,6 @@ import org.lrg.outcode.CountdownTimer;
 import org.lrg.outcode.IHindsight;
 import org.lrg.outcode.activator.GraphDB;
 import org.lrg.outcode.builder.ModelVistor;
-import org.lrg.outcode.builder.ModelVistor.OPERATIONS;
 import org.lrg.outcode.visitors.FeatureEnvy;
 import org.lrg.outcode.visitors.GodClass;
 import org.lrg.outcode.visitors.IntensiveCoupling;
@@ -134,7 +133,7 @@ public class Giterator extends AbstractHandler {
 
 								System.out.println("modified " + tree);
 								System.out.println("commit name " + commit.getName() + " " + commit.getId().name());
-								new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], OPERATIONS.INITIAL);
+								new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], null);
 								runMethodDetectionStrategies(commit.getCommitTime() + "000", true);
 								runClassDetectionStrategies(commit.getCommitTime() + "000");
 							} else {
@@ -149,7 +148,7 @@ public class Giterator extends AbstractHandler {
 									String version = commit.getCommitTime() + "000";
 									System.out.println("------- version " + new Date(Long.parseLong(version)).toString() + " -------");
 									new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], gitDir.getAbsolutePath().replace("/.git", "/"), diffs, version,
-											commit.getName());
+											commit.getName(), null);
 									runMethodDetectionStrategies(version, false);
 									runClassDetectionStrategies(version);
 								}

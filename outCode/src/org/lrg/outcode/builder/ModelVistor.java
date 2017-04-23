@@ -51,10 +51,6 @@ public class ModelVistor {
 	public static int parsedLOC = 0;
 	private Repository repository;
 
-	public static enum OPERATIONS {
-		INITIAL, ADD, MODIFY, DELETE
-	}
-
 	public ModelVistor(int i, String commitID, Repository repository) {
 		this.repository = repository;
 		this.commit = new Integer(i).toString() + "000";
@@ -65,8 +61,10 @@ public class ModelVistor {
 	private ASTParser theParser = ASTParser.newParser(AST.JLS8);
 	private HashMap<Integer, HashSet<IDetectionStrategy>> listeners = new HashMap<Integer, HashSet<IDetectionStrategy>>();
 	private OutCodeVisitor outCodeVisitor;
+	private String onlyTrackThisFilePath;
 
-	public void visitIJavaProject(IProject project, OPERATIONS op) throws CoreException, JavaModelException {
+	public void visitIJavaProject(IProject project, String onlyTrackThisFilePath) throws CoreException, JavaModelException {
+		this.onlyTrackThisFilePath = onlyTrackThisFilePath;
 		System.out.println("Working in project " + project.getName());
 		try {
 			JavaCore.getPlugin().getBundle().stop();
@@ -77,7 +75,7 @@ public class ModelVistor {
 		// check if we have a Java project
 		if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 			IJavaProject javaProject = JavaCore.create(project);
-			visitIPackageFragments(javaProject, op);
+			visitIPackageFragments(javaProject);
 		}
 	}
 
@@ -87,7 +85,7 @@ public class ModelVistor {
 		listeners.get(elementType).add(iDetectionStrategy);
 	}
 
-	private void visitIPackageFragments(IJavaProject javaProject, OPERATIONS op) throws JavaModelException {
+	private void visitIPackageFragments(IJavaProject javaProject) throws JavaModelException {
 		IPackageFragment[] packages = javaProject.getPackageFragments();
 		GraphDatabaseService dbService = GraphDB.instance.getDB();
 		Transaction tx = dbService.beginTx();
@@ -111,31 +109,34 @@ public class ModelVistor {
 				} finally {
 					tx.close();
 				}
-				visitICompilationUnits(mypackage, op);
+				visitICompilationUnits(mypackage);
 			}
 		}
 	}
 
-	private void visitICompilationUnits(IPackageFragment mypackage, OPERATIONS op) throws JavaModelException {
-
+	private void visitICompilationUnits(IPackageFragment mypackage) throws JavaModelException {
 		for (ICompilationUnit unit : mypackage.getCompilationUnits()) {
-			GraphDatabaseService dbService = GraphDB.instance.getDB();
-			Transaction tx = dbService.beginTx();
+			if (onlyTrackThisFilePath != null && onlyTrackThisFilePath.endsWith(unit.getResource().getProjectRelativePath().toPortableString())) {
+				System.out.println(" parsing " + unit.getResource().getProjectRelativePath().toPortableString());
+				GraphDatabaseService dbService = GraphDB.instance.getDB();
+				Transaction tx = dbService.beginTx();
 
-			try {
-				parseCompilationUnit(unit, op, 0, 0);
-				db.addNodeToDB(mypackage, unit, commit, commitID, 0, 0);
-				visitITypes(unit, op, 0, 0);
-				tx.success();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				tx.close();
-			}
+				try {
+					parseCompilationUnit(unit, 0, 0);
+					db.addNodeToDB(mypackage, unit, commit, commitID, 0, 0);
+					visitITypes(unit, 0, 0);
+					tx.success();
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					tx.close();
+				}
+			} else
+				System.out.println(" ignoring " + unit.getResource().getProjectRelativePath().toPortableString());
 		}
 	}
 
-	private void parseCompilationUnit(ICompilationUnit unit, OPERATIONS op, int added, int removed) {
+	private void parseCompilationUnit(ICompilationUnit unit, int added, int removed) {
 		try {
 			parsedLOC += unit.getSource().split("\\r?\\n").length;
 		} catch (JavaModelException e) {
@@ -149,17 +150,17 @@ public class ModelVistor {
 		entireAST.accept(outCodeVisitor);
 	}
 
-	private void visitNextVersionITypes(Node modifiedCompilationUnitNode, ICompilationUnit unit, OPERATIONS op, String version, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitNextVersionITypes(Node modifiedCompilationUnitNode, ICompilationUnit unit, String version, int addedLOC, int removedLOC) throws JavaModelException {
 		IType[] allTypes = unit.getAllTypes();
 		for (IType type : allTypes) {
 			Node latestVersionOfIType = db.addNextVersionNodeToDB(unit, type, version, commitID, addedLOC, removedLOC);
 			addContanmentRel(modifiedCompilationUnitNode, latestVersionOfIType);
-			visitIMethods(latestVersionOfIType, type, op, version, addedLOC, removedLOC);
-			visitIFields(latestVersionOfIType, type, op, version, addedLOC, removedLOC);
+			visitIMethods(latestVersionOfIType, type, version, addedLOC, removedLOC);
+			visitIFields(latestVersionOfIType, type, version, addedLOC, removedLOC);
 		}
 	}
 
-	private void visitIMethods(Node latestVersionOfIType, IType type, OPERATIONS op, String version, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitIMethods(Node latestVersionOfIType, IType type, String version, int addedLOC, int removedLOC) throws JavaModelException {
 		IMethod[] methods = type.getMethods();
 		for (IMethod method : methods) {
 			Node latestVersionOfIMethod = db.addNextVersionNodeToDB(type, method, version, commitID, addedLOC, removedLOC);
@@ -174,7 +175,7 @@ public class ModelVistor {
 		}
 	}
 
-	private void visitIFields(Node latestVersionOfIType, IType type, OPERATIONS op, String version, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitIFields(Node latestVersionOfIType, IType type, String version, int addedLOC, int removedLOC) throws JavaModelException {
 		IField[] methods = type.getFields();
 		for (IField field : methods) {
 			Node latestVersionOfIField = db.addNextVersionNodeToDB(type, field, version, commitID, addedLOC, removedLOC);
@@ -182,23 +183,23 @@ public class ModelVistor {
 		}
 	}
 
-	private void visitITypes(ICompilationUnit unit, OPERATIONS op, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitITypes(ICompilationUnit unit, int addedLOC, int removedLOC) throws JavaModelException {
 		IType[] allTypes = unit.getAllTypes();
 		for (IType type : allTypes) {
 			db.addNodeToDB(unit, type, commit, commitID, addedLOC, removedLOC);
-			visitIMethods(type, op, addedLOC, removedLOC);
-			visitIFields(type, op, addedLOC, removedLOC);
+			visitIMethods(type, addedLOC, removedLOC);
+			visitIFields(type, addedLOC, removedLOC);
 		}
 	}
 
-	private void visitIMethods(IType type, OPERATIONS op, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitIMethods(IType type, int addedLOC, int removedLOC) throws JavaModelException {
 		IMethod[] methods = type.getMethods();
 		for (IMethod method : methods) {
 			db.addNodeToDB(type, method, commit, commitID, addedLOC, removedLOC);
 		}
 	}
 
-	private void visitIFields(IType type, OPERATIONS op, int addedLOC, int removedLOC) throws JavaModelException {
+	private void visitIFields(IType type, int addedLOC, int removedLOC) throws JavaModelException {
 		IField[] fileds = type.getFields();
 		for (IField field : fileds) {
 			db.addNodeToDB(type, field, commit, commitID, addedLOC, removedLOC);
@@ -206,7 +207,7 @@ public class ModelVistor {
 	}
 
 	@SuppressWarnings("restriction")
-	public void visitIJavaProject(IProject iProject, String repoPath, List<DiffEntry> diffs, String version, String commitID) {
+	public void visitIJavaProject(IProject iProject, String repoPath, List<DiffEntry> diffs, String version, String commitID, String onlyTrackThisFile) {
 		GraphDatabaseService dbService = GraphDB.instance.getDB();
 		Transaction tx = dbService.beginTx();
 		try {
@@ -216,6 +217,8 @@ public class ModelVistor {
 			Set<IJavaElement> skipAlreadyAdded = new HashSet<IJavaElement>();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			for (DiffEntry diffEntry : diffs) {
+				if (!onlyTrackThisFile.endsWith(diffEntry.getNewPath()))
+					continue;
 				String absolutePath = repoPath + diffEntry.getNewPath();
 				String pathFromProject = absolutePath.replaceAll("\\\\", "/").replaceFirst(iProject.getLocation().toPortableString(), "");
 				IFile file = iProject.getFile(new Path(pathFromProject));
@@ -249,9 +252,9 @@ public class ModelVistor {
 
 							if (diffEntry.getChangeType() == ChangeType.MODIFY) {
 								System.out.println("---modify---- icompilationunint " + iCompilationUnit.getElementName());
-								Node latestVersionOfICompilationUnit = db.addModifiedVersion(iCompilationUnit, OPERATIONS.MODIFY, version);
-								parseCompilationUnit(iCompilationUnit, OPERATIONS.MODIFY, addedLOC, removedLOC);
-								visitNextVersionITypes(latestVersionOfICompilationUnit, iCompilationUnit, OPERATIONS.MODIFY, version, addedLOC, removedLOC);
+								Node latestVersionOfICompilationUnit = db.addModifiedVersion(iCompilationUnit, version);
+								parseCompilationUnit(iCompilationUnit, addedLOC, removedLOC);
+								visitNextVersionITypes(latestVersionOfICompilationUnit, iCompilationUnit, version, addedLOC, removedLOC);
 							} else if (diffEntry.getChangeType() == ChangeType.ADD || diffEntry.getChangeType() == ChangeType.COPY) {
 								/*
 								 * A new file is added with this commit. Make a new version of the package because now it's different.
@@ -259,9 +262,9 @@ public class ModelVistor {
 								System.out.println("---add---- icompilationunint " + iCompilationUnit.getElementName());
 								IJavaElement iPackageFragment = iCompilationUnit.getParent();
 								db.addNextVersionNodeToDB(javaProject, iPackageFragment, version, commitID, addedLOC, removedLOC);
-								parseCompilationUnit(iCompilationUnit, OPERATIONS.ADD, addedLOC, removedLOC);
+								parseCompilationUnit(iCompilationUnit, addedLOC, removedLOC);
 								db.addNodeToDB(iPackageFragment, iCompilationUnit, version, commitID, addedLOC, removedLOC);
-								visitITypes(iCompilationUnit, OPERATIONS.ADD, addedLOC, removedLOC);
+								visitITypes(iCompilationUnit, addedLOC, removedLOC);
 								skipAlreadyAdded.add(iCompilationUnit);
 								updateContainedElements.add((IPackageFragment) iPackageFragment);
 							} else if (diffEntry.getChangeType() == ChangeType.DELETE) {
