@@ -49,6 +49,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.lrg.outcode.CountdownTimer;
 import org.lrg.outcode.builder.ModelVistor;
+import org.lrg.outcode.builder.db.GraphDatasource;
 import org.outcode.git.Giterator.NullProgressMonitorExtension;
 
 public class CurrentFileEvolution extends AbstractHandler {
@@ -152,6 +153,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 		RevWalk walk = new RevWalk(repository);
 		int k = 0;
 		int noK = 0;
+
 		for (RevCommit revCommit : revCommits) {
 			try {
 				CountdownTimer.start("parseCommit");
@@ -159,8 +161,8 @@ public class CurrentFileEvolution extends AbstractHandler {
 				CountdownTimer.stop("parseCommit");
 
 				System.out.println("parsing commit with message " + revCommit.getName() + " " + revCommit.getFullMessage() + new Date(revCommit.getCommitTime()).toString());
-
-				if (true) {
+				String path = renameTracker.getPath(commit, unit.getResource().getFullPath().toPortableString());
+				if (GraphDatasource.INSTANCE.createdNewCommitNode(commit.getName() + path)) {
 					CheckoutCommand checkout = git.checkout();
 					try {
 						CountdownTimer.start("call");
@@ -176,7 +178,7 @@ public class CurrentFileEvolution extends AbstractHandler {
 
 								System.out.println("modified " + tree);
 								System.out.println("commit name " + commit.getName() + " " + commit.getId().name());
-								String path = renameTracker.getPath(commit, unit.getResource().getFullPath().toPortableString());
+
 								new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(javaProject, path);
 							} else {
 								if (commit.getParentCount() > 0) {
@@ -191,7 +193,6 @@ public class CurrentFileEvolution extends AbstractHandler {
 									String version = commit.getCommitTime() + "000";
 									System.out.println("------- version " + new Date(Long.parseLong(version)).toString() + " -------");
 									String absolutepath = gitDir.getAbsolutePath().replace("/.git", "/");
-									String path = renameTracker.getPath(commit, unit.getResource().getFullPath().toPortableString());
 									new ModelVistor(commit.getCommitTime(), commit.getName(), repository).visitIJavaProject(javaProject, absolutepath, diffs, version, commit.getName(), path);
 								}
 							}

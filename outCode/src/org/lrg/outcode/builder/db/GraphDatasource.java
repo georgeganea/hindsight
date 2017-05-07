@@ -242,8 +242,26 @@ public class GraphDatasource {
 		return n;
 	}
 
-	public void createCommitNode(String commitID, int commitSize) {
+	public boolean createdNewCommitNode(String commitID) {
+		GraphDatabaseService db = GraphDB.instance.getDB();
+		Label label = Label.label("CommitLabel");
+		GraphDatabaseService dbService = GraphDB.instance.getDB();
+		Transaction tx = dbService.beginTx();
+		try {
+			Node findNode = db.findNode(label, IHindsight.COMMITID, commitID);
+			if (findNode != null)
+				return false;
 
+			Node createNode = db.createNode();
+			createNode.addLabel(label);
+			createNode.setProperty(IHindsight.COMMITID, commitID);
+			tx.success();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			tx.close();
+		}
+		return true;
 	}
 
 }

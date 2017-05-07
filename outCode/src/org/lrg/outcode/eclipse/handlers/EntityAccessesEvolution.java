@@ -148,11 +148,6 @@ public class EntityAccessesEvolution {
 										}
 									});
 						});
-						JSONArray accessesArray = new JSONArray();
-						currentNodeAccesses.forEach(access -> {
-							accessesArray.put(access);
-						});
-
 						next = findNextNode(next);
 						i.index++;
 					} while (next != null);
